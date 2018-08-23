@@ -1,0 +1,14 @@
+{
+  "name": "socket.io-encrypt",
+  "version": "0.0.0",
+  "description": "Send encrypted and decrypt messages",
+  "main": "index.js",
+  "repository": "laggingreflex/socket.io-encrypt",
+  "peerDependencies": {
+    "socket.io": "^2.0.0",
+    "socket.io-client": "^2.0.0"
+  },
+  "dependencies": {
+    "cryptr": "^4.0.0"
+  }
+}
