@@ -26,8 +26,10 @@ module.exports = (secret) => (socket, next) => {
   const decrypt = encrypted => {
     try {
       return encrypted.map(a => JSON.parse(cryptr.decrypt(a)))
-    } catch (error) {
-      throw new Error(`Couldn't decrypt. ${error.message}`);
+    } catch (e) {
+      const error = new Error(`Couldn't decrypt. Wrong secret used on client or invalid data sent. (${e.message})`);
+      error.code = 'ERR_DECRYPTION_ERROR';
+      throw error;
     }
   };
 
@@ -45,7 +47,12 @@ module.exports = (secret) => (socket, next) => {
 
     return socket[on](event, function(...args) {
       if (args[0] && args[0].encrypted) {
-        args = decrypt(args[0].encrypted);
+        try {
+          args = decrypt(args[0].encrypted);
+        } catch (error) {
+          socket[emit]('error', error);
+          return;
+        }
       }
       return handler.call(this, ...args);
     });

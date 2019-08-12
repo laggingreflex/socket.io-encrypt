@@ -36,6 +36,7 @@ io.use(encrypt(secret))
 io.on('connect', socket => {
 
   socket.on('message', data /* decrypted */ => { ... })
+  socket.on('error', console.error /* handle decryption errors */)
 
 })
 ```
