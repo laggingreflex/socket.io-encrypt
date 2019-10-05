@@ -7,4 +7,4 @@ encrypt('secret')(socket);
 socket.on('connect', () => {
   console.log('Connected');
   socket.emit('message', { message: 'my secret message' });
-})
+});

@@ -7,7 +7,7 @@ module.exports = (secret) => (socket, next) => {
 
   const encrypt = args => {
     const encrypted = [];
-    let ack
+    let ack;
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
       if (i === args.length - 1 && typeof arg === 'function') {
@@ -25,7 +25,7 @@ module.exports = (secret) => (socket, next) => {
 
   const decrypt = encrypted => {
     try {
-      return encrypted.map(a => JSON.parse(cryptr.decrypt(a)))
+      return encrypted.map(a => JSON.parse(cryptr.decrypt(a)));
     } catch (e) {
       const error = new Error(`Couldn't decrypt. Wrong secret used on client or invalid data sent. (${e.message})`);
       error.code = 'ERR_DECRYPTION_ERROR';
