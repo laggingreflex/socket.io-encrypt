@@ -1,5 +1,5 @@
 const Cryptr = require('cryptr');
-const { emit, on, send } = require('./symbol');
+const { emit, on } = require('./symbol');
 const reservedEvents = require('./reserved-events');
 
 module.exports = (secret) => (socket, next) => {
