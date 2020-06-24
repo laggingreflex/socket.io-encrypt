@@ -1,8 +1,9 @@
 const Cryptr = require('cryptr');
-const { emit, on } = require('./symbol');
+const { emit, on, off } = require('./symbol');
 const reservedEvents = require('./reserved-events');
 
 module.exports = (secret) => (socket, next) => {
+  const handlers = new Map();
   const cryptr = new Cryptr(secret);
 
   const encrypt = args => {
@@ -35,6 +36,7 @@ module.exports = (secret) => (socket, next) => {
 
   socket[emit] = socket.emit;
   socket[on] = socket.on;
+  socket[off] = socket.off;
 
   socket.emit = (event, ...args) => {
     if (reservedEvents.includes(event)) return socket[emit](event, ...args);
@@ -45,7 +47,7 @@ module.exports = (secret) => (socket, next) => {
   socket.on = (event, handler) => {
     if (reservedEvents.includes(event)) return socket[on](event, handler);
 
-    return socket[on](event, function(...args) {
+    const newHandler = function(...args) {
       if (args[0] && args[0].encrypted) {
         try {
           args = decrypt(args[0].encrypted);
@@ -55,8 +57,21 @@ module.exports = (secret) => (socket, next) => {
         }
       }
       return handler.call(this, ...args);
-    });
+    };
+
+    handlers.set(handler, newHandler);
+    return socket[on](event, newHandler);
   };
+
+  socket.off = (event, handler) => {
+    if (reservedEvents.includes(event)) return socket[off](event, handler);
+
+    if (handlers.has(handler)) {
+      return socket[off](event, handlers.get(handler));
+    }
+
+    return socket[off](event, handler);
+  }
 
   if (next) next();
   return socket;
