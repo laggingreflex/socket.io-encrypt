@@ -1,6 +1,6 @@
 {
   "name": "socket.io-encrypt",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Send encrypted and decrypt messages",
   "main": "index.js",
   "repository": "laggingreflex/socket.io-encrypt",
