@@ -1,9 +1,9 @@
 const Cryptr = require('cryptr');
-const { emit, on, off } = require('./symbol');
+const { emit, on, off, removeEventListener, removeListener } = require('./symbol');
 const reservedEvents = require('./reserved-events');
 
 module.exports = (secret) => (socket, next) => {
-  const handlers = new Map();
+  const handlers = new WeakMap();
   const cryptr = new Cryptr(secret);
 
   const encrypt = args => {
@@ -37,6 +37,8 @@ module.exports = (secret) => (socket, next) => {
   socket[emit] = socket.emit;
   socket[on] = socket.on;
   socket[off] = socket.off;
+  socket[removeEventListener] = socket.removeEventListener;
+  socket[removeListener] = socket.removeListener;
 
   socket.emit = (event, ...args) => {
     if (reservedEvents.includes(event)) return socket[emit](event, ...args);
@@ -66,11 +68,21 @@ module.exports = (secret) => (socket, next) => {
   socket.off = (event, handler) => {
     if (reservedEvents.includes(event)) return socket[off](event, handler);
 
-    if (handlers.has(handler)) {
-      return socket[off](event, handlers.get(handler));
+    const properHandler = handlers.get(handler);
+    if (properHandler) {
+      handlers.delete(handler);
+      return socket[off](event, properHandler);
     }
 
     return socket[off](event, handler);
+  }
+
+  socket.removeEventListener = (event, handler) => {
+    return socket.off(event, handler);
+  }
+
+  socket.removeListener = (event, handler) => {
+    return socket.off(event, handler);
   }
 
   if (next) next();
